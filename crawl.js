@@ -1,6 +1,26 @@
 const {JSDOM} = require('jsdom') //importing JSDOM package
 
-async function crawlPage(currentURL){
+async function crawlPage(baseURL,currentURL,pages){
+  const currentUrlObj = new URL(currentURL)
+  const baseUrlObj = new URL(baseURL)
+  if (currentUrlObj.hostname !== baseUrlObj.hostname){
+    return pages
+  }
+
+  const normalizedURL = normalizeURL(currentURL)
+
+  // if we've already visited this page
+  // just increase the count and don't repeat
+  // the http request
+  if (pages[normalizedURL] > 0){
+    pages[normalizedURL]++
+    return pages
+  }
+
+  pages[normalizedURL] = 1
+
+  console.log(`actively crawling : ${currentURL}`)
+  let htmlBody =''
   // fetch will give an error if the URL got passed in is invalied, so we use try and catch to check if it valid or not
   try{
     const response = await fetch(currentURL)
@@ -10,23 +30,56 @@ async function crawlPage(currentURL){
     // check the response status, if greater then 399 means there is error
     if (responseStatus > 399){
       console.log(`error in fetching url : ${currentURL}, status code : ${responseStatus}`)
-      return
+      return pages
     }
 
-    const contentType = resp.headers.get("content-type")
+    const contentType = response.headers.get("content-type")
 
     // need to check if the content type is html or not
-    if (contentType !== 'text/html'){
+    if (!contentType.includes('text/html')){
       console.log(`non html response, content type : ${contentType} on page : ${currentURL}`)
-      return
+      return pages
     }
+    htmlBody= await response.text()
 
-
-    console.log(await getHttp.text())
+    
   } catch(err){
     console.log(`error in fetch : ${err.message}, on page : ${currentURL}`)
   }
+
+  const URLCollected = getURLsFromHTML(htmlBody,baseURL)
+    for (const nextURL of URLCollected){
+      pages = await crawlPage(baseURL,nextURL,pages)
+    }
+  return pages
+}
+
+
+async function crawlPage2(baseURL,currentURL,pages){
   
+  let htmlBody =''
+  // fetch will give an error if the URL got passed in is invalied, so we use try and catch to check if it valid or not
+  try{
+    const response = await fetch(currentURL)
+    const responseStatus = response.status
+    // check the response status, if greater then 399 means there is error
+    if (responseStatus > 399){
+      console.log(`error in fetching url : ${currentURL}, status code : ${responseStatus}`)
+      return pages
+    }
+    const contentType = response.headers.get("content-type")
+    // need to check if the content type is html or not
+    if (!contentType.includes('text/html')){
+      console.log(`non html response, content type : ${contentType} on page : ${currentURL}`)
+      return pages
+    }
+    htmlBody= await response.text()
+  } catch(err){
+    console.log(`error in fetch : ${err.message}, on page : ${currentURL}`)
+  }
+
+  const URLCollected = getURLsFromHTML(htmlBody,baseURL)
+  return URLCollected
 }
 
 /**
@@ -100,25 +153,10 @@ function normalizeURL(theURL){
   return urlHostPAth
 }
 
-const htmlBodyInput = `
-  <html>
-    <body>
-      <a href = "https://blog.boot.dev">
-        blog boot.dev
-      </a>
-    </body>
-  </html>
-  `
-
-getURLsFromHTML(htmlBodyInput,"https://blog.boot.dev")
-
-
-
-
-
 // we specified what function we want to export by typing the function name inside the module.exports
 module.exports = {
   normalizeURL,
   getURLsFromHTML,
-  crawlPage
+  crawlPage,
+
 }

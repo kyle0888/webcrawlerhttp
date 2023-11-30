@@ -1,6 +1,6 @@
 const {crawlPage} = require('./crawl.js')
 
-function main(){
+async function main(){
   // we need to check if there is website provided in the argument
   // it is three because first entry of the argument is the intepreter
   // the second entry is the name of our code (main.js) or the path of our file
@@ -17,8 +17,14 @@ function main(){
   }
 
   const urlToCrawl = process.argv[2]
+
+
   console.log(`start crawling : ${urlToCrawl}`)
-  crawlPage(urlToCrawl)
+  const pagesCollected = await crawlPage(urlToCrawl,urlToCrawl,{})
+
+  for (const page of Object.entries(pagesCollected)){
+    console.log(page)
+  }
 
 }
 
