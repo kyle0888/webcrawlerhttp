@@ -1,5 +1,33 @@
 const {JSDOM} = require('jsdom') //importing JSDOM package
 
+async function crawlPage(currentURL){
+  // fetch will give an error if the URL got passed in is invalied, so we use try and catch to check if it valid or not
+  try{
+    const response = await fetch(currentURL)
+
+    const responseStatus = response.status
+
+    // check the response status, if greater then 399 means there is error
+    if (responseStatus > 399){
+      console.log(`error in fetching url : ${currentURL}, status code : ${responseStatus}`)
+      return
+    }
+
+    const contentType = resp.headers.get("content-type")
+
+    // need to check if the content type is html or not
+    if (contentType !== 'text/html'){
+      console.log(`non html response, content type : ${contentType} on page : ${currentURL}`)
+      return
+    }
+
+
+    console.log(await getHttp.text())
+  } catch(err){
+    console.log(`error in fetch : ${err.message}, on page : ${currentURL}`)
+  }
+  
+}
 
 /**
  * 
@@ -91,5 +119,6 @@ getURLsFromHTML(htmlBodyInput,"https://blog.boot.dev")
 // we specified what function we want to export by typing the function name inside the module.exports
 module.exports = {
   normalizeURL,
-  getURLsFromHTML
+  getURLsFromHTML,
+  crawlPage
 }
