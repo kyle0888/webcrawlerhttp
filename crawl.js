@@ -1,3 +1,51 @@
+const {JSDOM} = require('jsdom') //importing JSDOM package
+
+
+/**
+ * 
+ * this function collect urls from a htmlBody of URL that link to the htmlBody
+ * 
+ * url can be relative and absoulte, if it is relative we need to concatinate it with the baseURL
+ * we can check if the URL is valid or not by trying to construct the URL object and passing in the string url
+ * if it don't give error, its mean it is valid url
+ * 
+ * @param {String} htmlBody string that represent html body which we want to collect the URLs
+ * @param {String} baseURL URL that we want to collect urls inside it
+ * @returns 
+ */
+function getURLsFromHTML(htmlBody,baseURL){
+
+  const urls = []
+  // parsing a string to dom
+  const dom = new JSDOM(htmlBody)
+
+  // collect all anchor
+  const allAnchor = dom.window.document.querySelectorAll("a")
+
+  for (anchor of allAnchor){
+    // check if it is an absolute or relative
+    if (anchor.href.slice(0,1) === '/'){
+      // if it is relative
+      try{
+        new URL(`${baseURL}${anchor.href}`)
+        urls.push (`${baseURL}${anchor.href}`)
+      }catch(err){
+        console.log(err)
+      }
+    } else{
+      // if it is absolute
+        try{
+          new URL(anchor.href)
+          urls.push (anchor.href)
+        }catch(err){
+          console.log(err)
+        }
+    }
+  }
+  return urls
+}
+
+
 
 /**
  * there are many URL that point to the same web page . Example
@@ -24,8 +72,24 @@ function normalizeURL(theURL){
   return urlHostPAth
 }
 
+const htmlBodyInput = `
+  <html>
+    <body>
+      <a href = "https://blog.boot.dev">
+        blog boot.dev
+      </a>
+    </body>
+  </html>
+  `
+
+getURLsFromHTML(htmlBodyInput,"https://blog.boot.dev")
+
+
+
+
 
 // we specified what function we want to export by typing the function name inside the module.exports
 module.exports = {
-  normalizeURL
+  normalizeURL,
+  getURLsFromHTML
 }
