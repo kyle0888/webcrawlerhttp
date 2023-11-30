@@ -33,7 +33,10 @@ the step :
   before we change it, if we type 'npm test', we will get "Error: no test specified", now if we try to type 'npm test' , we are properly calling jest now
 
 10) commit to git
-  1) type 'git add'
+  1) type 'git add .'
+    this add every file in the foler to the git staging area
+  2) type 'git commit -m "whatever message this is"'
+  3) type 'git push origin main'
 
 
 
